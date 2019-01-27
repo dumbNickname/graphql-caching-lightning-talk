@@ -1,0 +1,244 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <title>GraphQL caching</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+
+  <link rel="icon" href="common/img/favicon.ico">
+
+  <link rel="stylesheet" href="reveal.js-3.6.0/css/reveal.css">
+  <link rel="stylesheet" href="reveal.js-3.6.0/css/theme/white.css">
+  <link rel="stylesheet" href="common/css/common.css">
+
+  <!-- Theme used for syntax highlighting of code -->
+  <!-- <link rel="stylesheet" href="reveal.js-3.6.0/lib/css/zenburn.css"> -->
+  <link rel="stylesheet" href="common/css/solarized-light.css">
+
+  <!-- Printing and PDF exports -->
+  <!-- <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+  </script> -->
+</head>
+<body>
+  <div class="devon reveal">
+    <div class="slides">
+
+
+      <section>            
+        <style>
+          .reveal .gql-logo {
+            display: flex;
+            color: #E10098;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 0.2em;
+          }
+          .reveal .gql-logo img {
+            height: 1em;
+            margin: 0 0.3em;
+          }
+          .gql-logo span {
+            font-size: 0.5em;
+          }
+
+          .author {
+            display:flex; 
+            justify-content: flex-end;
+            align-items: center;
+          }
+          .author .name {
+            font-weight: bold; 
+            margin-right: 0.1em;
+          }
+          .author img {
+            width: 0.5em
+          }
+        </style>
+
+        <h1>
+          <div class="gql-logo">
+            <img src="common/img/gql-logo.svg" class="plain"/> 
+            <span>GraphQL</span>
+          </div>
+          <div>How <span class="red">not</span> to play</div>
+          <div>fetch <span class="green">too much</span></div>
+        </h1>
+        <div class="author">
+          <span class="name primaryFont">
+            Bartek Pietrowski
+          </span>
+          <a href="https://www.linkedin.com/in/bart%C5%82omiej-pietrowski-8a6a844b/">
+            <img src="common/img/linked-in-logo.png" alt="linkedin profile link" class="plain">
+          </a> 
+        </div>
+      </section>
+
+      <section data-background-color="#fdf6e3">
+          <pre style="box-shadow: none"><code class="javascript" style="max-height: none" data-trim data-escape>
+              import { SeniorSoftwareEngineer } from 'Freelancers';
+              const Bartek = SeniorSoftwareEngineer({
+                  age: 30,
+                  exp: [
+                      'React',
+                      'Angular',
+                      'SSR',
+                      'node.js', 'graphql'
+                      'Java',
+                      'Spring',
+                  ],
+                  interests: [
+                      'pwa','amp',
+                      'universal','web',
+                      'functional', 'reactive',
+                      'performance', 'clean-code',
+                  ],
+                  trainer: true,
+              });
+              export const software = Bartek.code({ quality: 'good' });
+          </code></pre>
+      </section>
+
+
+      <section>
+        <h3>
+          <div>GraphQL is <span class="green">fun</span>,</div>
+          <div>but what is often overlooked?</div>
+        </h3>
+
+        <h2 class="red">
+          Caching :)
+        </h2>
+      </section>
+
+      <section>
+        <h2>Some reasons why caching is <span class="red">important</span></h2>
+
+        <ul class="no-bullets">
+          <li><span class="green">Faster</span> load times for <span class="green">returning users</span></li>
+          <li>Servers can have <span class="green">less load</span></li>
+          <li>Cheaper</li>
+          <li><span class="green">Content distribution</span> around the world</li>
+          <li>Often <span class="green">simpler</span> infrastructure</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>
+          <div class="red">Active</div> 
+          <div>vs.</div>
+          <div class="green">Passive</div>
+        </h2>
+      </section>
+
+      <section>
+        <style>
+          .reveal .custom-quote {
+            box-shadow: none;
+          }
+          .reveal .custom-quote p {
+            border-left: var(--cap-green) 0.1em solid;
+            padding-left: 1em;
+            text-align: left;
+          }
+          .custom-quote .line {
+            display: block;
+          }
+          .quote-author {
+            text-align: right;
+          }
+        </style>
+        <blockquote class="custom-quote">
+            <p>
+              <span class="line">There are only two hard things in Computer Science:</span>
+              <span class="line"><span class="red">cache invalidation</span> and naming things.</span>
+            </p>
+            <div class="quote-author">Phil Karlton</div>
+          </blockquote>
+      </section>
+
+
+      <section>
+        <h2>Caching whaaat?</h2>
+
+        <ul>
+          <li>Full GraphQl API responses</li>
+          <li>Graph partials</li>
+          <li>Underlying APIs responses (GraphQL as integration layer)</li>
+        </ul>
+      </section>
+
+      <section data-background-color="var(--cap-blue)">
+        <h2 class="green">Easy?</h2>
+      </section>
+
+      <section>
+        <h2>POST (default) vs. GET</h2>
+
+        <ul>
+          <li>GET length limitation</li>
+          <li>CDNs and HTTP accelerators (e.g Varnish)</li>
+          <li>browser policies & CORS issues</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Graph data structure</h2>
+
+        <ul>
+          <li>specific nodes could have different life time</li>
+          <li>is compatible with SSR and ESI?</li>
+          <li>Flexible endpoint or convenient API?</li>
+        </ul>
+      </section>
+        
+      <section>
+          <h2>Some possible solutions</h2>
+
+          <ul>
+            <li>Split queries + HTTP2</li>
+            <li>Persisted queries</li>
+            <li>GraphQL schema directives</li>
+            <li>Apollo GraphQL Platform - Apollo Engine</li>
+          </ul>
+      </section>
+
+      <section>
+        <h2 style="font-size: 1.2em; margin: 0;">If you want the slides:</h2>
+        <img style="height: 13em; margin: 0;" class="plain" src="common/img/slides_qr_code.svg" alt="">
+      </section>
+
+    </div>
+  </div>
+
+
+  <script src="reveal.js-3.6.0/lib/js/head.min.js"></script>
+  <script src="reveal.js-3.6.0/js/reveal.js"></script>
+
+  <script>
+      // More info https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+          history: true,
+
+          // More info https://github.com/hakimel/reveal.js#dependencies
+          dependencies: [
+              {src: 'reveal.js-3.6.0/plugin/markdown/marked.js'},
+              {src: 'reveal.js-3.6.0/plugin/markdown/markdown.js'},
+              {src: 'reveal.js-3.6.0/plugin/notes/notes.js', async: true},
+              {
+                  src: 'reveal.js-3.6.0/plugin/highlight/highlight.js', async: true, callback: function () {
+                  hljs.initHighlightingOnLoad();
+              }
+              }
+          ]
+      });
+  </script>
+</body>
+</html>
