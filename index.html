@@ -31,6 +31,18 @@
   <div class="devon reveal">
     <div class="slides">
 
+        <style>
+          /* Some common styles for this slides */
+          .reveal section .small-note {
+            font-size: 0.5em;
+            color: gray;
+            display: block;
+          }
+          ul.no-bullets.more-space li {
+            margin-top: 0.4em;
+          }
+        </style>
+        </style>
 
       <section>            
         <style>
@@ -129,6 +141,21 @@
           <li>Often <span class="green">simpler</span> infrastructure</li>
           <li>Protects against DOS attacks</li>
         </ul>
+        <!-- https://jakearchibald.com/2016/caching-best-practices/ -->
+      </section>
+
+      <section class="gotchas">
+
+        <h2>Gotchas</h2>
+
+        <ul class="no-bullets">
+          <li><span class="red">Inconsistient</span> caching</li>
+          <li>Race conditions</li>
+          <li>Summing up of TTLs over <span class="red">layers</span></li>
+          <li>Headers <span class="red">misunderstanding</span> 
+            <span class="small-note">e.g. no-cache doesn't mean "don't cache", it means - must check!</span>
+          </li>
+        </ul>
       </section>
 
       <section>
@@ -161,19 +188,115 @@
               <span class="line">There are only two hard things in Computer Science:</span>
               <span class="line"><span class="red">cache invalidation</span> and naming things.</span>
             </p>
-            <div class="quote-author">Phil Karlton</div>
+            <div class="quote-author"><strong>Phil Karlton</strong></div>
           </blockquote>
       </section>
 
 
       <section>
+
+        <style>
+          .reveal .blocks {
+            margin-top: 1em;
+            display: flex;
+            justify-content: center;
+          }
+          .reveal .blocks .placeholder {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+          }
+          .reveal .box {
+            border: black 0.1em solid;
+            border-radius: 0.2em;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            padding: 0.3em;
+            margin: 0.2em;
+            font-size: 0.8em;
+          }
+          .reveal .box .comment {
+            display: block;
+            font-size: 0.7em;
+            color: gray;
+          }
+          .reveal .box .gql-logo {
+            margin: 0;
+          }
+          .reveal .box .gql-logo img {
+            margin: 0.2em 0;
+          }
+          .reveal .box.client {
+            color: var(--cap-green);
+            border-color: var(--cap-green);
+          }
+          .reveal .box.server {
+            color: var(--cap-blue);
+            border-color: var(--cap-blue);
+          }
+          .reveal .box.db {
+            color: var(--cap-red);
+            border-color: var(--cap-red);
+          }
+          .reveal .edge {
+            background-color: black;
+            border: black 0.05em solid;
+            min-width: 1em;
+            height: 0px;;
+          }
+          .reveal .edge.client {
+            border-color: var(--cap-green);
+            background-color: var(--cap-green);
+          }
+          .reveal .edge.db {
+            margin-top: 1em;
+            margin-bottom: 1em;
+            border-color: var(--cap-red);
+            background-color: var(--cap-red);
+          }
+          .reveal .edge.external {
+            margin-top: 4em;
+            margin-bottom: 1em;
+          }
+        </style>
+
         <h2>Caching whaaat?</h2>
 
-        <ul>
-          <li>Full GraphQl API responses</li>
-          <li>Graph partials</li>
-          <li>Underlying APIs responses (GraphQL as integration layer)</li>
+        <ul class="no-bullets">
+          <li class="green">Full GraphQl API responses</li>
+          <li class="blue">Graph partials</li>
+          <li>Underlying APIs responses <span class="small-note">(GraphQL as integration layer)</span></li>
         </ul>
+
+        <div class="blocks">
+          <div class="box client">
+            Client 
+            <!-- <span class="comment">apollo client cache</span> -->
+            <!-- <span class="comment">browser http cache</span> -->
+            <!-- <span class="comment">service workers</span> -->
+          </div>
+          <div class="placeholder">
+            <div class="edge client"></div>
+          </div>
+          <div class="box server">
+            Server
+            <div class="gql-logo">
+              <img src="common/img/gql-logo.svg" class="plain"/> 
+              <span>GraphQL</span>
+            </div>
+            <!-- <span class="comment">CDN</span> -->
+            <!-- <span class="comment">HTTP accelerator</span> -->
+            <!-- <span class="comment">App cache</span> -->
+          </div>
+          <div class="placeholder">
+            <div class="edge db"></div>
+            <div class="edge external"></div>
+          </div>
+          <div class="placeholder">
+            <div class="box db">DB</div>
+            <div class="box external">External API</div>
+          </div>
+        </div>
       </section>
 
       <section data-background-color="var(--cap-blue)">
@@ -181,30 +304,31 @@
       </section>
 
       <section>
+
         <h2>POST (default) vs. GET</h2>
 
-        <ul>
-          <li>do you mix mutations with data retrieval?</li>
-          <li>GET length limitation</li>
-          <li>CDNs and HTTP accelerators (e.g Varnish)</li>
-          <li>browser policies & CORS issues</li>
+        <ul class="no-bullets more-space">
+          <li>do you <span class="red">mix mutations</span> with <span class="red">data</span> retrieval?</li>
+          <li>GET URL  length <span class="red">limitation (2,048 characters)</span></li>
+          <li>CDNs and HTTP accelerators (e.g <span class="red">Varnish</span>)</li>
+          <li>browser policies & <span class="red">CORS issues</span></li>
         </ul>
       </section>
 
       <section>
         <h2>Graph data structure</h2>
 
-        <ul>
+        <ul class="no-bullets more-space">
           <li>specific nodes could have different life time</li>
           <li>is compatible with SSR and ESI?</li>
-          <li>Flexible endpoint or convenient API?</li>
+          <li>GraphQL used as truly flexible API or for convenience?</li>
         </ul>
       </section>
         
       <section>
           <h2>Some possible solutions</h2>
 
-          <ul>
+          <ul class="no-bullets more-space">
             <li>Split queries + HTTP2</li>
             <li>Persisted queries</li>
             <li>GraphQL schema directives</li>
